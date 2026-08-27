@@ -1,0 +1,24 @@
+{
+  "title": "ハッカソン審査員デモ用シナリオ（笑いと沈黙の6秒間）",
+  "participants": [
+    { "id": "user_a", "name": "審査員A (鈴木)" },
+    { "id": "user_b", "name": "発表者 (佐藤)" },
+    { "id": "user_c", "name": "メンバー (田中)" }
+  ],
+  "events": [
+    { "timeMs": 0, "userId": "user_b", "speaking": true, "level": 0.65, "comment": "佐藤: それでは発表を始めます！" },
+    { "timeMs": 2500, "userId": "user_b", "speaking": false, "level": 0.05 },
+    { "timeMs": 3000, "userId": "user_a", "speaking": true, "level": 0.70, "comment": "鈴木: はい、よろしくお願いします" },
+    { "timeMs": 5000, "userId": "user_a", "speaking": false, "level": 0.04 },
+    { "timeMs": 5500, "userId": "user_b", "speaking": true, "level": 0.80, "comment": "佐藤: 本作は会話の『隙間』を計測します" },
+    { "timeMs": 8000, "userId": "user_b", "speaking": false, "level": 0.05 },
+    { "timeMs": 8500, "userId": "user_c", "speaking": true, "level": 0.75, "comment": "田中: ちなみに今日の朝ご飯はカツ丼でした！" },
+    { "timeMs": 11000, "userId": "user_c", "speaking": false, "level": 0.02, "comment": "（唐突な発言で会話が完全にストップ）" },
+    { "timeMs": 17200, "userId": "user_a", "speaking": true, "level": 0.85, "comment": "鈴木: ……えっと、カツ丼は美味しかったですか？（沈黙ブレイカー救出！）" },
+    { "timeMs": 20000, "userId": "user_a", "speaking": false, "level": 0.05 },
+    { "timeMs": 20500, "userId": "user_c", "speaking": true, "level": 0.60, "comment": "田中: めちゃくちゃ美味しかったです！" },
+    { "timeMs": 22500, "userId": "user_c", "speaking": false, "level": 0.03 },
+    { "timeMs": 23000, "userId": "user_b", "speaking": true, "level": 0.70, "comment": "佐藤: このように田中の発言で6.2秒の沈黙が生まれました！" },
+    { "timeMs": 26500, "userId": "user_b", "speaking": false, "level": 0.02 }
+  ]
+}
