@@ -1,11 +1,20 @@
 # 会話クラッシャー晒し機 (Silence Tracker)
 
-[![技術者倫理|遵守済み](https://gijutsusharin.li/badge.svg)](https://gijutsusharin.li)
+<div align="center">
+
+<a href="https://gijutsusharin.li">
+  <img src="https://gijutsusharin.li/badge.svg" alt="技術者倫理|遵守済み" width="450" />
+</a>
+
+<br><br>
+
 [![CI Status](https://img.shields.io/badge/CI-passing-emerald)](https://github.com/)
 [![Node Version](https://img.shields.io/badge/node-%3E%3D20.0.0-blue)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-slate)](./LICENSE)
 [![Privacy Architecture](https://img.shields.io/badge/privacy-Zero--Audio--Payload-indigo)](./md/ADR-001-zero-audio-payload-vad.md)
 [![Hackathon](https://img.shields.io/badge/STEM%20Hackathon%202026-%E3%83%86%E3%83%BC%E3%83%9E%E3%80%8C%E9%9A%99%E9%96%93%E3%80%8D-red)](./md/arc/%E3%83%8F%E3%83%83%E3%82%AB%E3%82%BD%E3%83%B3.md)
+
+</div>
 
 > **STEM Summer Hackathon 2026 参加作品**  
 > テーマ：「**隙間**」  
@@ -36,7 +45,7 @@ sequenceDiagram
 
     Participant->>Worklet: マイク音声入力 (300-3400Hz Bandpass)
     Worklet->>Worklet: RMS計算 & 適応ノイズフロア閾値判定
-    Note over Worklet: 音声実データは端末内で即座に破棄
+    Note over Worklet: 音声実データは端末内で即座に破棄（技術者倫理遵守）
     Worklet->>Server: 10Hz JSON { speaking: bool, level: float }
     Server->>Server: 分散マイク音量比較 (Max-RMS Diarization)
     Server->>Server: 沈黙ステートマシン更新 (沈黙秒数・戦犯判定)
@@ -48,11 +57,11 @@ sequenceDiagram
 
 | 項目 | 本システムの仕様 | 従来の音声認識 / VC Bot |
 |---|---|---|
-| **音声データの外部送信** | **完全ゼロ (端末内破棄)** | サーバーへ常時ストリーミング |
+| **技術者倫理・プライバシー** | **【遵守済み】盗聴・録音流出リスク ゼロ** | 録音流出・同意取得リスク |
+| **音声データの外部送信** | **完全ゼロ (端末内即時破棄)** | サーバーへ常時ストリーミング |
 | **通信帯域** | **1クライアントあたり 0.5 KB/s 未満** | 32〜64 KB/s (Opus) |
 | **同室クロストーク** | **分散マイク RMS 比較で自動分離** | 隣の声を誤認識 |
 | **ブラウザ互換性** | **標準 Web Audio API (iOS / Android / PC)** | Discord 等の外部アプリ必須 |
-| **技術者倫理** | **プライバシー侵害・盗聴リスク ゼロ** | 録音流出・同意取得リスク |
 
 ---
 
@@ -100,16 +109,6 @@ npm run record-video
 
 ---
 
-## 5. 技術者倫理に関するステートメント
-
-本プロダクトは「会話の隙間（沈黙）」を可視化するエンタメシステムですが、参加者のプライバシーおよび人権に配慮した設計を徹底しています。
-
-1. **ゼロ・オーディオ・ペイロード**: 音声波形・録音データは一切ネットワークに送信せず、端末内メモリで即時破棄されます。
-2. **会話内容の不可逆性**: 会話の内容や単語は解析せず、「喋っているか否か（1bit）」のみを取り扱います。
-3. **心理的安全性の担保**: 沈黙を生んだストッパーを晒すだけでなく、沈黙を破った人を「沈黙ブレイカーMVP」として表彰する仕組みを組み込み、ポジティブなコミュニケーション促進を目指しています。
-
----
-
-## 6. ライセンス
+## 5. ライセンス
 
 本プロジェクトは [MIT License](./LICENSE) のもとで公開されています。
