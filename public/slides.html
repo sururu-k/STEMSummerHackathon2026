@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>発表スライド - 会話クラッシャー晒し機</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'M PLUS Rounded 1c', 'Zen Maru Gothic', sans-serif;
+    }
+    .comic-box {
+      border: 4px solid #000;
+      box-shadow: 6px 6px 0px #000;
+    }
+    .comic-box-danger {
+      border: 5px solid #000;
+      box-shadow: 8px 8px 0px #dc2626;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-900 min-h-screen flex flex-col justify-between p-6 select-none">
+
+  <!-- 上部バー -->
+  <header class="flex items-center justify-between text-white border-b border-slate-800 pb-3">
+    <div class="flex items-center gap-2">
+      <span class="bg-red-600 font-black text-xs px-2.5 py-1 rounded">STEM Summer Hackathon 2026</span>
+      <span class="font-bold text-sm text-slate-300">テーマ「隙間」発表ピッチ</span>
+    </div>
+    <div class="flex items-center gap-4 text-xs font-bold text-slate-400">
+      <span>[←] / [→] スライド切替</span>
+      <span id="slideIndicator" class="bg-slate-800 text-yellow-400 px-3 py-1 rounded-full font-mono text-sm border border-slate-700">1 / 5</span>
+    </div>
+  </header>
+
+  <!-- スライド本体コンテナ -->
+  <main class="flex-1 flex items-center justify-center my-4">
+    <div id="slideFrame" class="w-full max-w-5xl h-[620px] bg-amber-50 rounded-3xl p-10 comic-box flex flex-col justify-between relative overflow-hidden transition-all duration-300 shadow-2xl">
+      
+      <!-- Slide 1: 表紙 -->
+      <div id="slide1" class="slide-content h-full flex flex-col justify-between items-center text-center py-6">
+        <div class="inline-block bg-red-600 text-white font-black text-sm px-4 py-1.5 rounded-lg border-2 border-black rotate-[-2deg] shadow-md">
+          ハッカソン発表作品
+        </div>
+        <div class="space-y-4">
+          <h1 class="text-6xl font-black tracking-tight text-slate-900 leading-tight">
+            会話クラッシャー晒し機
+          </h1>
+          <p class="text-2xl font-black text-red-600">
+            〜 会話の「隙間（沈黙）」を可視化・戦犯公開処刑 〜
+          </p>
+        </div>
+        <div class="flex items-center gap-6 text-sm font-bold text-slate-700 bg-white px-6 py-3 rounded-2xl border-2 border-black">
+          <span>チーム: 隙間ハンター</span>
+          <span>|</span>
+          <span>発表時間: 2〜3分</span>
+        </div>
+      </div>
+
+      <!-- Slide 2: 課題提起 -->
+      <div id="slide2" class="slide-content hidden h-full flex flex-col justify-between py-4">
+        <div class="space-y-2">
+          <span class="bg-black text-yellow-300 font-black text-xs px-3 py-1 rounded-md">PROBLEM / 日常の違和感</span>
+          <h2 class="text-4xl font-black text-slate-900">
+            誰かの発言の後、急に「シーン……」となったことは？
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-3 gap-6 my-4">
+          <div class="bg-white p-6 rounded-2xl border-3 border-black comic-box space-y-2 text-center">
+            <div class="text-xl font-black text-red-600">[ 突然の空白 ]</div>
+            <h3 class="text-lg font-black text-slate-900">会話の停止</h3>
+            <p class="text-xs font-bold text-slate-600">楽しく話していたのに急に会話が止まる</p>
+          </div>
+          <div class="bg-white p-6 rounded-2xl border-3 border-black comic-box space-y-2 text-center">
+            <div class="text-xl font-black text-slate-900">[ 気まずい空気 ]</div>
+            <h3 class="text-lg font-black text-slate-900">犯人探し</h3>
+            <p class="text-xs font-bold text-slate-600">「誰のせい？」と言い出せない隙間</p>
+          </div>
+          <div class="bg-white p-6 rounded-2xl border-3 border-black comic-box space-y-2 text-center">
+            <div class="text-xl font-black text-indigo-600">[ 解散の危機 ]</div>
+            <h3 class="text-lg font-black text-slate-900">沈黙の固定化</h3>
+            <p class="text-xs font-bold text-slate-600">会話が完全に凍結して気まずい沈黙</p>
+          </div>
+        </div>
+
+        <div class="bg-red-500 text-white text-center py-3 rounded-2xl border-3 border-black font-black text-lg shadow-[3px_3px_0px_#000]">
+          誰も言えない真実（戦犯）を、テクノロジーで白日の下に晒す！
+        </div>
+      </div>
+
+      <!-- Slide 3: ソリューション -->
+      <div id="slide3" class="slide-content hidden h-full flex flex-col justify-between py-4">
+        <div class="space-y-2">
+          <span class="bg-red-600 text-white font-black text-xs px-3 py-1 rounded-md">SOLUTION / 解決策</span>
+          <h2 class="text-4xl font-black text-slate-900">
+            『会話クラッシャー晒し機』の仕組み
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6 my-2">
+          <div class="bg-white p-5 rounded-2xl border-3 border-black comic-box space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 bg-black text-white rounded-full flex items-center justify-center font-black text-xs">1</span>
+              <h3 class="text-base font-black text-slate-900">QRコードで各自のスマホが監視マイクに</h3>
+            </div>
+            <p class="text-xs font-bold text-slate-600">音声内容は送らず、1bitの発話判定のみ持ち寄るプライバシー保護設計。</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border-3 border-black comic-box space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 bg-red-600 text-white rounded-full flex items-center justify-center font-black text-xs">2</span>
+              <h3 class="text-base font-black text-red-600">沈黙検知で大画面に直前の発言者を晒し上げ</h3>
+            </div>
+            <p class="text-xs font-bold text-slate-600">会話が止まった瞬間からミリ秒単位でカウントアップ。直前の発言者を名指し！</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border-3 border-black comic-box space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 bg-yellow-400 text-black rounded-full flex items-center justify-center font-black text-xs">3</span>
+              <h3 class="text-base font-black text-slate-900">5秒で巨大スタンプ飛び出し</h3>
+            </div>
+            <p class="text-xs font-bold text-slate-600">「その発言で！ピタッと止まった…」が集中線とともにドカンと出現。</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border-3 border-black comic-box space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 bg-emerald-600 text-white rounded-full flex items-center justify-center font-black text-xs">4</span>
+              <h3 class="text-base font-black text-emerald-600">沈黙ブレイカーMVP表彰</h3>
+            </div>
+            <p class="text-xs font-bold text-slate-600">止まった会話を再開させた人を大量の紙吹雪で祝福し、ポジティブに回収。</p>
+          </div>
+        </div>
+
+        <div class="text-xs font-bold text-slate-500 text-center">
+          ※ 1端末＝1マイクの分散マイクアレイ方式でクロストークを自動分離
+        </div>
+      </div>
+
+      <!-- Slide 4: デモ実演 (MP4動画 & 特大スタンプ) -->
+      <div id="slide4" class="slide-content hidden h-full flex flex-col justify-between py-2">
+        <div class="flex items-center justify-between border-b-2 border-slate-300 pb-2">
+          <div class="flex items-center gap-2">
+            <span class="bg-red-600 text-white font-black text-xs px-3 py-1 rounded-md animate-pulse">LIVE DEMO</span>
+            <h2 class="text-2xl font-black text-slate-900">
+              実際の動作デモ（マルチ端末実演）
+            </h2>
+          </div>
+          <a href="/studio.html" target="_blank" class="text-xs font-black bg-yellow-300 hover:bg-yellow-400 px-3 py-1 rounded-lg border-2 border-black shadow-[2px_2px_0px_#000]">
+            別窓でスタジオを開く
+          </a>
+        </div>
+
+        <!-- 埋め込み MP4 プレイヤー -->
+        <div class="my-2 bg-black rounded-2xl border-4 border-black overflow-hidden relative flex items-center justify-center" style="height: 440px;">
+          <video id="demoVideo" src="/demo-presentation.mp4" controls autoplay loop playsinline class="w-full h-full object-contain"></video>
+        </div>
+
+        <div class="flex justify-between items-center text-xs font-black text-slate-700 bg-white px-4 py-1.5 rounded-xl border-2 border-black">
+          <span>シナリオ: 00:08 田中がカツ丼発言 ➔ 00:16 特大スタンプ爆撃 ➔ 00:22 鈴木が救出MVP</span>
+          <span class="text-red-600">※ 1920x1080 Full HD 実機収録</span>
+        </div>
+      </div>
+
+      <!-- Slide 5: まとめ & テーマ着地 -->
+      <div id="slide5" class="slide-content hidden h-full flex flex-col justify-between py-4">
+        <div class="space-y-2">
+          <span class="bg-black text-yellow-300 font-black text-xs px-3 py-1 rounded-md">CONCLUSION / まとめ</span>
+          <h2 class="text-4xl font-black text-slate-900">
+            テーマ「隙間」への回答
+          </h2>
+        </div>
+
+        <div class="bg-white p-6 rounded-3xl border-4 border-black comic-box space-y-4 my-2">
+          <div class="flex items-start gap-4">
+            <div class="p-2 bg-red-100 rounded-xl border-2 border-black font-black text-sm">POINT 1</div>
+            <div class="space-y-1">
+              <h3 class="text-lg font-black text-slate-900">隙間を無理に埋めない逆張りの発想</h3>
+              <p class="text-xs font-bold text-slate-600">
+                会話の隙間（沈黙）を気まずいものとして隠すのではなく、<strong>隙間を作った戦犯を晒して笑いに変える</strong>ことで、結果的に会話が爆発的に盛り上がる。
+              </p>
+            </div>
+          </div>
+          <div class="flex items-start gap-4 border-t-2 border-slate-200 pt-3">
+            <div class="p-2 bg-emerald-100 rounded-xl border-2 border-black font-black text-sm">POINT 2</div>
+            <div class="space-y-1">
+              <h3 class="text-lg font-black text-slate-900">壊れない技術選定</h3>
+              <p class="text-xs font-bold text-slate-600">
+                Web Audio API / AudioWorklet ＋ Node WebSocket。外部音声APIや非公式ボットに依存せず、ブラウザ標準技術だけで完結する堅牢なアーキテクチャ。
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-yellow-300 text-center py-3 rounded-2xl border-3 border-black font-black text-xl shadow-[4px_4px_0px_#000]">
+          ご清聴ありがとうございました！
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- 下部: トーク原稿ノート (折りたたみ可能) -->
+  <footer class="bg-slate-900 text-white rounded-2xl p-4 border border-slate-800 max-w-5xl mx-auto w-full flex items-center justify-between">
+    <div class="space-y-0.5 flex-1 mr-4">
+      <div class="text-[11px] font-bold text-yellow-400">現在のスライドのトーク原稿:</div>
+      <div id="speakerNote" class="text-xs text-slate-200 font-medium leading-relaxed">
+        「皆さんこんにちは！テーマ『隙間』に対して、我々が着目したのは誰もが一度は経験したことのある『会話の隙間』……すなわち、気まずい沈黙です。」
+      </div>
+    </div>
+    <div class="flex items-center gap-2 shrink-0">
+      <button id="prevBtn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl border border-slate-600 text-xs">
+        前へ
+      </button>
+      <button id="nextBtn" class="px-4 py-1.5 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl text-xs">
+        次へ
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 5;
+
+    const speakerNotes = [
+      "",
+      "「皆さんこんにちは！テーマ『隙間』に対して、我々が着目したのは誰もが一度は経験したことのある『会話の隙間』……すなわち、気まずい沈黙です。」",
+      "「楽しく雑談していたのに、誰かが一言発した瞬間、急に会話が止まって全員がスマホを見る……そんな経験はありませんか？ 我々はこの犯人を特定し、大画面で公開処刑するシステムを開発しました。」",
+      "「参加者がQRコードを読み込むだけでスマホが監視マイクになります。会話が止まった瞬間に大画面の沈黙カウンタが跳ね上がり、5秒で『その発言でピタッと止まった』スタンプが爆撃されます！」",
+      "「それでは実際のデモ動画をご覧ください。田中さんが『今日の朝ご飯はカツ丼でした！』と発言した瞬間……会話が止まりました！スタンプが飛び出し、鈴木さんが沈黙を救出してMVPに選ばれます！」",
+      "「音声そのものは一切サーバーへ送らないプライバシー完全保護設計です。会話の隙間を作った戦犯を晒して笑いに変える——これが我々のテーマ『隙間』への回答です。ありがとうございました！」"
+    ];
+
+    const slideIndicator = document.getElementById('slideIndicator');
+    const speakerNote = document.getElementById('speakerNote');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const demoVideo = document.getElementById('demoVideo');
+
+    function updateSlide() {
+      for (let i = 1; i <= totalSlides; i++) {
+        const slide = document.getElementById('slide' + i);
+        if (i === currentSlide) {
+          slide.classList.remove('hidden');
+        } else {
+          slide.classList.add('hidden');
+        }
+      }
+
+      slideIndicator.textContent = `${currentSlide} / ${totalSlides}`;
+      speakerNote.textContent = speakerNotes[currentSlide];
+
+      if (currentSlide === 4) {
+        demoVideo.currentTime = 0;
+        demoVideo.play();
+      } else {
+        demoVideo.pause();
+      }
+    }
+
+    prevBtn.addEventListener('click', () => {
+      if (currentSlide > 1) {
+        currentSlide--;
+        updateSlide();
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+        updateSlide();
+      }
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        if (currentSlide < totalSlides) {
+          currentSlide++;
+          updateSlide();
+        }
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        if (currentSlide > 1) {
+          currentSlide--;
+          updateSlide();
+        }
+      }
+    });
+  </script>
+</body>
+</html>
