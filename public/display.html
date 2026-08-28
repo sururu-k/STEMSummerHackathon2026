@@ -270,14 +270,26 @@
 
     let ws = null;
     function connectWs() {
-      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-      ws = new WebSocket(`${protocol}//${location.host}/ws`);
+      try {
+        const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        ws = new WebSocket(`${protocol}//${location.host}/ws`);
 
-      ws.onmessage = (event) => {
-        if (isReplayMode) return;
-        const state = JSON.parse(event.data);
-        renderState(state);
-      };
+        ws.onmessage = (event) => {
+          if (isReplayMode) return;
+          const state = JSON.parse(event.data);
+          renderState(state);
+        };
+        ws.onerror = () => {
+          if (!isReplayMode) {
+            isReplayMode = true;
+            toggleModeBtn.textContent = 'DEMO モード';
+            startReplay();
+          }
+        };
+      } catch (err) {
+        isReplayMode = true;
+        startReplay();
+      }
     }
 
     if (!isReplayMode) {
@@ -466,8 +478,27 @@
       if (replayTimer) clearInterval(replayTimer);
       historyBuffer.length = 0;
 
-      const res = await fetch('/api/replay-scenario');
-      replayScenario = await res.json();
+      try {
+        const res = await fetch('/api/replay-scenario');
+        replayScenario = await res.json();
+      } catch (e) {
+        replayScenario = {
+          participants: [
+            { id: "user_a", name: "審査員A (鈴木)" },
+            { id: "user_b", name: "発表者 (佐藤)" },
+            { id: "user_c", name: "メンバー (田中)" }
+          ],
+          events: [
+            { timeMs: 0, userId: "user_b", speaking: true, level: 0.75 },
+            { timeMs: 3000, userId: "user_a", speaking: true, level: 0.8 },
+            { timeMs: 5500, userId: "user_b", speaking: true, level: 0.7 },
+            { timeMs: 8000, userId: "user_c", speaking: true, level: 0.9 },
+            { timeMs: 10500, userId: "user_c", speaking: false, level: 0.02 },
+            { timeMs: 22000, userId: "user_a", speaking: true, level: 0.85 },
+            { timeMs: 25000, userId: "user_b", speaking: true, level: 0.6 }
+          ]
+        };
+      }
       replayStartTime = Date.now();
 
       const participants = replayScenario.participants.map(p => ({
