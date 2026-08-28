@@ -162,38 +162,34 @@
         </div>
       </div>
 
-      <!-- Slide 5: まとめ & テーマ着地 -->
+      <!-- Slide 5: まとめ & テーマ着地 (Gemini / 低遅延AI連携) -->
       <div id="slide5" class="slide-content hidden h-full flex flex-col justify-between py-4">
         <div class="space-y-2">
-          <span class="bg-black text-yellow-300 font-black text-xs px-3 py-1 rounded-md">CONCLUSION / まとめ</span>
-          <h2 class="text-4xl font-black text-slate-900">
-            テーマ「隙間」への回答
+          <span class="bg-black text-yellow-300 font-black text-xs px-3 py-1 rounded-md">CONCLUSION / 技術構成 & 発展性</span>
+          <h2 class="text-3xl font-black text-slate-900">
+            堅牢なエッジ基盤と Gemini / 低遅延AI連携による発展性
           </h2>
         </div>
 
-        <div class="bg-white p-6 rounded-3xl border-4 border-black comic-box space-y-4 my-2">
-          <div class="flex items-start gap-4">
-            <div class="p-2 bg-red-100 rounded-xl border-2 border-black font-black text-sm">POINT 1</div>
-            <div class="space-y-1">
-              <h3 class="text-lg font-black text-slate-900">隙間を無理に埋めない逆張りの発想</h3>
-              <p class="text-xs font-bold text-slate-600">
-                会話の隙間（沈黙）を気まずいものとして隠すのではなく、<strong>隙間を作った戦犯を晒して笑いに変える</strong>ことで、結果的に会話が爆発的に盛り上がる。
-              </p>
-            </div>
+        <div class="grid grid-cols-2 gap-4 my-2">
+          <div class="bg-white p-5 rounded-2xl border-3 border-black comic-box space-y-2">
+            <div class="p-1.5 bg-red-100 rounded-lg border-2 border-black font-black text-xs inline-block">現行実装</div>
+            <h3 class="text-base font-black text-slate-900">壊れないエッジVAD ＋ 技術者倫理</h3>
+            <p class="text-xs font-bold text-slate-600">
+              Web Audio API / AudioWorklet ＋ Node WS。端末内メモリで即時破棄し、15ms未満の低遅延かつ倫理基準を完全遵守。
+            </p>
           </div>
-          <div class="flex items-start gap-4 border-t-2 border-slate-200 pt-3">
-            <div class="p-2 bg-emerald-100 rounded-xl border-2 border-black font-black text-sm">POINT 2</div>
-            <div class="space-y-1">
-              <h3 class="text-lg font-black text-slate-900">壊れない技術選定</h3>
-              <p class="text-xs font-bold text-slate-600">
-                Web Audio API / AudioWorklet ＋ Node WebSocket。外部音声APIや非公式ボットに依存せず、ブラウザ標準技術だけで完結する堅牢なアーキテクチャ。
-              </p>
-            </div>
+          <div class="bg-white p-5 rounded-2xl border-3 border-black comic-box space-y-2">
+            <div class="p-1.5 bg-indigo-100 rounded-lg border-2 border-black font-black text-xs inline-block text-indigo-700">発展性</div>
+            <h3 class="text-base font-black text-indigo-900">Gemini 2.0 Flash / Nano 連携</h3>
+            <p class="text-xs font-bold text-slate-600">
+              超低遅延・軽量LLMと連携し、沈黙発生時に「なぜ会話が止まったかの一言ツッコミ」や「沈黙救出キラーパス」を爆速生成！
+            </p>
           </div>
         </div>
 
-        <div class="bg-yellow-300 text-center py-3 rounded-2xl border-3 border-black font-black text-xl shadow-[4px_4px_0px_#000]">
-          ご清聴ありがとうございました！
+        <div class="bg-yellow-300 text-center py-3 rounded-2xl border-3 border-black font-black text-lg shadow-[4px_4px_0px_#000]">
+          隙間を作った戦犯を晒して笑いに変える逆張りのエンタメ！
         </div>
       </div>
 

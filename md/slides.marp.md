@@ -2,7 +2,7 @@
 marp: true
 theme: gaia
 paginate: true
-header: "STEM Summer Hackathon 2026 ｜ テーマ「隙間」"
+header: "STEM Summer Hackathon 2026 ｜ 技術者倫理 遵守済み"
 footer: "チーム「隙間ハンター」 ｜ 会話クラッシャー晒し機"
 style: |
   section {
@@ -30,19 +30,31 @@ style: |
     font-weight: 900;
     display: inline-block;
   }
+  .highlight-ethics {
+    background-color: #059669;
+    color: #ffffff;
+    padding: 8px 20px;
+    border-radius: 12px;
+    font-weight: 900;
+    border: 3px solid #000000;
+    box-shadow: 4px 4px 0px #000000;
+    display: inline-block;
+    font-size: 22px;
+    letter-spacing: 1px;
+  }
   .comic-card {
     background: #ffffff;
     border: 3px solid #000000;
     box-shadow: 5px 5px 0px #000000;
     border-radius: 16px;
-    padding: 16px;
+    padding: 14px 16px;
   }
   .danger-card {
     background: #fef2f2;
     border: 3px solid #dc2626;
     box-shadow: 5px 5px 0px #dc2626;
     border-radius: 16px;
-    padding: 16px;
+    padding: 14px 16px;
   }
 ---
 
@@ -50,17 +62,20 @@ style: |
 <!-- _paginate: false -->
 <!-- _header: "" -->
 
+<div style="text-align: center; margin-bottom: 20px;">
+  <span class="highlight-ethics">[ 技術者倫理 遵守済み ] プライバシー・人権完全保護</span>
+</div>
+
 # 会話クラッシャー晒し機
 ### 〜 会話の「隙間（沈黙）」を可視化・戦犯公開処刑 〜
 
-<div style="margin-top: 30px;">
+<div style="margin-top: 20px;">
   <span class="highlight-red">STEM Summer Hackathon 2026 参加作品</span>
 </div>
 
 <br>
 
-**チーム「隙間ハンター」**  
-発表時間：約 2〜3 分
+**チーム「隙間ハンター」** ｜ 発表時間：約 2〜3 分
 
 ---
 
@@ -98,7 +113,7 @@ style: |
 
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
   <div class="comic-card">
-    <h4 style="margin: 0 0 6px 0; color: #0f172a; font-size: 18px;">1. QRコードで即座に監視マイク化</h4>
+    <h4 style="margin: 0 0 6px 0; color: #0f172a; font-size: 18px;">1. QRで監視マイク化（技術者倫理 遵守）</h4>
     <p style="font-size: 15px; margin: 0; color: #334155;">音声は一切送信せず、ブラウザ内VADで「喋った/喋ってない」の判定のみ集約（プライバシー保護）。</p>
   </div>
   <div class="comic-card">
@@ -140,24 +155,33 @@ style: |
 
 ---
 
-## 技術構成 & テーマ「隙間」への着地
+## 技術構成 & Gemini / 低遅延AI連携による発展性
 
-<div class="comic-card" style="margin-bottom: 16px;">
-  <h4 style="margin: 0 0 8px 0; color: #0f172a;">堅牢なブラウザ標準アーキテクチャ</h4>
-  <p style="font-size: 16px; margin: 0; color: #334155;">
-    <b>Web Audio API / AudioWorklet</b> ＋ <b>Node.js WebSocket</b><br>
-    外部APIに頼らずブラウザ標準のみで同室クロストークを自動分離（分散マイクアレイ方式）。
-  </p>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 10px;">
+  <div class="comic-card">
+    <h4 style="margin: 0 0 4px 0; color: #0f172a; font-size: 17px;">[ 現行実装 ] 堅牢なエッジVAD</h4>
+    <p style="font-size: 14px; margin: 0; color: #334155;">
+      <b>Web Audio API / AudioWorklet</b> ＋ <b>Node.js WS</b><br>
+      低遅延（15ms未満）・外部API非依存・端末内メモリ即時破棄で「技術者倫理」を完全遵守。
+    </p>
+  </div>
+  <div class="comic-card">
+    <h4 style="margin: 0 0 4px 0; color: #4f46e5; font-size: 17px;">[ 発展性 ] Gemini 2.0 Flash 連携</h4>
+    <p style="font-size: 14px; margin: 0; color: #334155;">
+      <b>Gemini Flash / Gemini Nano</b><br>
+      超低遅延・軽量LLMを活用し、沈黙発生時に「なぜ会話が止まったかの一言ツッコミ」や「沈黙救出キラーパス」をリアルタイム爆速生成！
+    </p>
+  </div>
 </div>
 
-<div class="danger-card">
-  <h4 style="margin: 0 0 8px 0; color: #dc2626;">隙間を無理に埋めない「逆張りのエンタメ」</h4>
-  <p style="font-size: 18px; font-weight: bold; margin: 0; color: #0f172a;">
+<div class="danger-card" style="margin-top: 14px;">
+  <h4 style="margin: 0 0 4px 0; color: #dc2626; font-size: 17px;">隙間を無理に埋めない「逆張りのエンタメ」</h4>
+  <p style="font-size: 16px; font-weight: bold; margin: 0; color: #0f172a;">
     会話の隙間（沈黙）を気まずいものとして隠すのではなく、<br>
     <span class="highlight-red">隙間を作った戦犯を晒して笑いに変える</span> ことで、結果的に会話が爆発的に盛り上がる！
   </p>
 </div>
 
-<div style="text-align: center; margin-top: 20px; font-weight: 900; font-size: 24px; color: #0f172a;">
+<div style="text-align: center; margin-top: 10px; font-weight: 900; font-size: 22px; color: #0f172a;">
   ご清聴ありがとうございました！
 </div>
