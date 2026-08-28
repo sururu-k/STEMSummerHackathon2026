@@ -8,6 +8,7 @@
 
 <br><br>
 
+[![GitHub Pages Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-brightgreen)](https://sururu-k.github.io/STEMSummerHackathon2026/)
 [![CI Status](https://img.shields.io/badge/CI-passing-emerald)](https://github.com/)
 [![Node Version](https://img.shields.io/badge/node-%3E%3D20.0.0-blue)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-slate)](./LICENSE)
@@ -22,10 +23,13 @@
 
 ---
 
-## 1. ドキュメント一覧
+## 1. オンラインモック & ドキュメント
 
+- **[GitHub Pages オンラインモックポータル](https://sururu-k.github.io/STEMSummerHackathon2026/)**
+  - [マルチ端末ライブスタジオ (studio.html)](https://sururu-k.github.io/STEMSummerHackathon2026/studio.html)
+  - [発表スライドプレイヤー (slides.html)](https://sururu-k.github.io/STEMSummerHackathon2026/slides.html)
+  - [大画面ダッシュボード (display.html)](https://sururu-k.github.io/STEMSummerHackathon2026/display.html?mode=replay)
 - **[Marp 発表スライド Markdown](./md/slides.marp.md)**（[PDF版スライド](./slides.pdf) / [HTML版スライド](./public/marp-slides.html)）
-- **[動画連動プレゼンプレイヤー (Web)](./public/slides.html)**（トーク原稿・自動動画再生付き）
 - **[アーキテクチャ設計決定書 (ADR-001)](./md/ADR-001-zero-audio-payload-vad.md)**
 - **[実装計画書・詳細仕様](./md/%E3%83%8F%E3%83%83%E3%82%AB%E3%82%BD%E3%83%B3%20%E5%AE%9F%E8%A3%85%E8%A8%88%E7%94%BB.md)**
 - **[開発・コントリビューション規約](./CONTRIBUTING.md)**
