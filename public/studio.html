@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>発表用マルチ端末デモスタジオ - 会話クラッシャー晒し機</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      font-family: 'M PLUS Rounded 1c', 'Zen Maru Gothic', sans-serif;
+    }
+    .comic-box {
+      border: 3px solid #000;
+      box-shadow: 4px 4px 0px #000;
+    }
+    .comic-box-danger {
+      border: 4px solid #000;
+      box-shadow: 6px 6px 0px #dc2626;
+    }
+    @keyframes focus-lines {
+      0% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.02) rotate(1deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    .speed-lines {
+      background: repeating-conic-gradient(
+        from 0deg,
+        rgba(220, 38, 38, 0.22) 0deg 10deg,
+        transparent 10deg 20deg
+      );
+      animation: focus-lines 0.2s infinite linear;
+    }
+    @keyframes stamp-slam-large {
+      0% { transform: translate(-50%, -50%) scale(2.8) rotate(-15deg); opacity: 0; }
+      70% { transform: translate(-50%, -50%) scale(0.95) rotate(2deg); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1) rotate(-2deg); opacity: 1; }
+    }
+    .animate-stamp-large {
+      animation: stamp-slam-large 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    @keyframes comic-shake {
+      0%, 100% { transform: translate(0, 0); }
+      25% { transform: translate(-3px, 3px) rotate(-1deg); }
+      75% { transform: translate(3px, -3px) rotate(1deg); }
+    }
+    .shake-hard {
+      animation: comic-shake 0.15s infinite;
+    }
+    #touchCursor {
+      pointer-events: none;
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: rgba(239, 68, 68, 0.8);
+      border: 2px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      transform: translate(-50%, -50%);
+      transition: all 0.2s ease-out;
+      z-index: 100;
+      opacity: 0;
+    }
+    #touchCursor.active {
+      transform: translate(-50%, -50%) scale(0.8);
+      background: rgba(220, 38, 38, 1);
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-900 min-h-screen p-4 flex flex-col justify-between select-none overflow-hidden" style="width: 1920px; height: 1080px;">
+
+  <div id="touchCursor"></div>
+
+  <!-- 上部: 大画面プロジェクター投影ビュー (高さ 590px) -->
+  <div class="bg-amber-50 rounded-3xl p-4 border-4 border-black shadow-[8px_8px_0px_#000] flex flex-col justify-between" style="height: 590px;">
+    
+    <!-- 大画面ヘッダー -->
+    <div class="flex items-center justify-between bg-white px-4 py-2 rounded-2xl border-3 border-black comic-box">
+      <div class="flex items-center gap-2">
+        <span class="bg-red-600 text-white font-black text-[11px] px-2.5 py-1 rounded border-2 border-black rotate-[-2deg]">
+          会場大画面プロジェクター
+        </span>
+        <h1 class="text-xl font-black text-slate-900">
+          その発言で会話がピタッと止まった晒し機
+        </h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <span id="demoStepBadge" class="bg-yellow-300 border-2 border-black text-slate-900 font-black text-xs px-3 py-1 rounded-xl">
+          実演中: 参加者入室
+        </span>
+        <div class="flex items-center gap-2 px-3 py-1 bg-white border-2 border-black rounded-xl text-xs font-black">
+          <div class="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping"></div>
+          <span id="mainParticipantCount">接続端末: 3 台</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 大画面メイングリッド -->
+    <div class="grid grid-cols-12 gap-4 flex-1 my-3 items-stretch">
+      
+      <!-- 中央晒しスクリーン (8カラム) -->
+      <div class="col-span-8 flex flex-col justify-between gap-3">
+        
+        <!-- 巨大カウンタ & 集中線 & 特大スタンプ -->
+        <div id="mainCounterCard" class="flex-1 bg-white border-4 border-black rounded-3xl p-4 flex flex-col items-center justify-center relative overflow-hidden comic-box transition-all duration-200">
+          
+          <div id="mainSpeedLines" class="hidden absolute inset-0 speed-lines pointer-events-none z-0"></div>
+
+          <div class="relative z-10 flex flex-col items-center justify-center w-full">
+            <div id="mainSilenceTag" class="text-[11px] font-black uppercase tracking-widest text-slate-700 bg-slate-200 px-3 py-0.5 rounded-full border-2 border-black">
+              連続沈黙時間（会話の隙間）
+            </div>
+            
+            <div class="flex items-baseline gap-2 my-1">
+              <span id="mainSilenceCounter" class="text-8xl font-black font-mono tracking-tighter text-slate-900 drop-shadow-[3px_3px_0px_#cbd5e1]">
+                0.0
+              </span>
+              <span class="text-3xl font-black text-slate-700">秒</span>
+            </div>
+
+            <div id="mainSilenceMessage" class="text-sm font-black text-slate-800 px-6 py-1.5 rounded-xl bg-yellow-300 border-2 border-black shadow-[3px_3px_0px_#000]">
+              会話進行中
+            </div>
+          </div>
+
+          <!-- 特大スタンプポップアップ（画面中央にドカンと巨大出現） -->
+          <div id="mainStampPopup" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-72 md:w-80 drop-shadow-[10px_10px_0px_rgba(0,0,0,0.9)] pointer-events-none">
+            <div class="relative">
+              <img src="/その発言で会話がピタッと止まった.png" alt="その発言で会話がピタッと止まった" class="w-full rounded-2xl border-4 border-black bg-white shadow-2xl">
+              <div id="mainStampBadge" class="absolute -top-3 -left-2 bg-red-600 text-white text-xs font-black px-3 py-1 rounded-lg border-2 border-black rotate-[-4deg]">
+                犯人: メンバー (田中)
+              </div>
+            </div>
+          </div>
+
+          <!-- 下部テロップ -->
+          <div class="relative z-10 w-full flex items-center justify-between text-xs font-black text-slate-700 border-t-2 border-black pt-2 mt-2">
+            <div class="flex items-center gap-1.5">
+              <span class="px-2 py-0.5 bg-red-600 text-white rounded border border-black text-[11px]">直前の戦犯</span>
+              <span id="mainLastStopper" class="text-xs font-black text-red-600">まだいません</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="px-2 py-0.5 bg-emerald-500 text-white rounded border border-black text-[11px]">救出MVP</span>
+              <span id="mainLastBreaker" class="text-xs font-black text-emerald-700">まだいません</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- タイムライン Canvas -->
+        <div class="bg-white border-3 border-black rounded-2xl p-2.5 comic-box flex flex-col justify-between" style="height: 105px;">
+          <div class="flex justify-between text-[11px] font-black text-slate-800 px-1 mb-1">
+            <span>発話と沈黙の隙間タイムライン</span>
+            <span class="text-slate-500">過去30秒スクロール</span>
+          </div>
+          <canvas id="mainTimelineCanvas" class="w-full h-16 bg-slate-900 rounded-lg border-2 border-black"></canvas>
+        </div>
+
+      </div>
+
+      <!-- 右側ランキング & 被害統計 (4カラム) -->
+      <div class="col-span-4 flex flex-col justify-between gap-3">
+        <div class="flex-1 bg-white border-3 border-black rounded-2xl p-3.5 comic-box flex flex-col justify-between space-y-2">
+          
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-center border-b border-slate-200 pb-1">
+              <h3 class="text-xs font-black text-red-600">会話クラッシャー殿堂</h3>
+              <span class="text-[10px] text-slate-500">凍結回数</span>
+            </div>
+            <div id="mainStopperList" class="space-y-1.5">
+              <div class="text-[11px] text-slate-400 text-center py-2 bg-slate-50 rounded-lg border border-dashed border-slate-300">
+                まだ会話が止まっていません
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-1 border-t border-slate-200 pt-1.5">
+            <h3 class="text-[11px] font-black text-emerald-600">気まずさ救出ランキング</h3>
+            <div id="mainBreakerList" class="text-[11px] text-slate-400 text-center py-1 bg-slate-50 rounded">記録なし</div>
+          </div>
+
+          <div class="bg-red-50 p-2 rounded-xl border border-red-300 flex justify-between items-center text-xs font-black">
+            <span class="text-slate-700">合計被害時間</span>
+            <span id="mainTotalSilence" class="font-mono text-red-600 text-sm">0.0 秒</span>
+          </div>
+        </div>
+
+        <div class="bg-yellow-300 border-3 border-black rounded-2xl p-2.5 comic-box flex items-center gap-3">
+          <img src="/その発言で会話がピタッと止まった.png" class="w-14 h-14 rounded-lg border-2 border-black bg-white object-cover">
+          <div class="space-y-0.5">
+            <div class="text-[11px] font-black text-red-600">スマホで発言監視中</div>
+            <p class="text-[10px] font-bold text-slate-800">あの一言で止まった瞬間を晒す！</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- 下部: 各参加者のスマホ端末 3台 (高さ 440px) -->
+  <div class="grid grid-cols-3 gap-6 my-2" style="height: 440px;">
+    
+    <!-- 端末 1: 審査員A (鈴木) -->
+    <div id="phone1" class="bg-white border-4 border-black rounded-3xl p-4 comic-box flex flex-col justify-between shadow-[6px_6px_0px_#000] relative">
+      <div class="flex items-center justify-between border-b-2 border-slate-200 pb-2">
+        <div class="flex items-center gap-1.5">
+          <span class="bg-indigo-600 text-white font-black text-[10px] px-2 py-0.5 rounded">端末 1</span>
+          <span class="font-black text-sm text-slate-900">審査員A (鈴木)</span>
+        </div>
+        <span id="p1StatusBadge" class="text-[10px] bg-red-600 text-white font-black px-2 py-0.5 rounded">監視中</span>
+      </div>
+
+      <div class="flex flex-col items-center justify-center p-3 bg-amber-50 rounded-2xl border-2 border-black my-2 space-y-1.5">
+        <div id="p1Ring" class="flex items-center justify-center w-16 h-16 rounded-full border-3 border-slate-400 bg-white transition-all">
+          <span id="p1TextStatus" class="text-xs font-black text-slate-500">待機中</span>
+        </div>
+        <div id="p1Text" class="text-xs font-black text-slate-700">沈黙中（安全）</div>
+        
+        <div class="w-full space-y-0.5">
+          <div class="flex justify-between text-[10px] font-bold text-slate-500">
+            <span>マイク音量</span>
+            <span id="p1LevelVal">0.00</span>
+          </div>
+          <div class="w-full h-2 bg-slate-200 rounded-full border border-black overflow-hidden">
+            <div id="p1Bar" class="h-full bg-indigo-600 w-0 transition-all"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-50 p-2 rounded-xl border border-slate-300 space-y-0.5">
+        <div class="flex justify-between text-[10px] font-black text-slate-700">
+          <span>感度マージン調整</span>
+          <span class="text-red-600 font-mono">0.05</span>
+        </div>
+        <input type="range" min="0.01" max="0.30" value="0.05" class="w-full accent-indigo-600 cursor-pointer">
+      </div>
+    </div>
+
+    <!-- 端末 2: 発表者 (佐藤) -->
+    <div id="phone2" class="bg-white border-4 border-black rounded-3xl p-4 comic-box flex flex-col justify-between shadow-[6px_6px_0px_#000] relative">
+      <div class="flex items-center justify-between border-b-2 border-slate-200 pb-2">
+        <div class="flex items-center gap-1.5">
+          <span class="bg-amber-500 text-black font-black text-[10px] px-2 py-0.5 rounded">端末 2</span>
+          <span class="font-black text-sm text-slate-900">発表者 (佐藤)</span>
+        </div>
+        <span id="p2StatusBadge" class="text-[10px] bg-red-600 text-white font-black px-2 py-0.5 rounded">監視中</span>
+      </div>
+
+      <div class="flex flex-col items-center justify-center p-3 bg-amber-50 rounded-2xl border-2 border-black my-2 space-y-1.5">
+        <div id="p2Ring" class="flex items-center justify-center w-16 h-16 rounded-full border-3 border-slate-400 bg-white transition-all">
+          <span id="p2TextStatus" class="text-xs font-black text-slate-500">待機中</span>
+        </div>
+        <div id="p2Text" class="text-xs font-black text-slate-700">沈黙中（安全）</div>
+        
+        <div class="w-full space-y-0.5">
+          <div class="flex justify-between text-[10px] font-bold text-slate-500">
+            <span>マイク音量</span>
+            <span id="p2LevelVal">0.00</span>
+          </div>
+          <div class="w-full h-2 bg-slate-200 rounded-full border border-black overflow-hidden">
+            <div id="p2Bar" class="h-full bg-amber-500 w-0 transition-all"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-50 p-2 rounded-xl border border-slate-300 space-y-0.5">
+        <div class="flex justify-between text-[10px] font-black text-slate-700">
+          <span>感度マージン調整</span>
+          <span class="text-red-600 font-mono">0.05</span>
+        </div>
+        <input type="range" min="0.01" max="0.30" value="0.05" class="w-full accent-amber-500 cursor-pointer">
+      </div>
+    </div>
+
+    <!-- 端末 3: メンバー (田中) - 戦犯 -->
+    <div id="phone3" class="bg-white border-4 border-black rounded-3xl p-4 comic-box flex flex-col justify-between shadow-[6px_6px_0px_#000] relative">
+      <div class="flex items-center justify-between border-b-2 border-slate-200 pb-2">
+        <div class="flex items-center gap-1.5">
+          <span class="bg-red-600 text-white font-black text-[10px] px-2 py-0.5 rounded">端末 3</span>
+          <span class="font-black text-sm text-slate-900">メンバー (田中)</span>
+        </div>
+        <span id="p3StatusBadge" class="text-[10px] bg-red-600 text-white font-black px-2 py-0.5 rounded">監視中</span>
+      </div>
+
+      <div class="flex flex-col items-center justify-center p-3 bg-amber-50 rounded-2xl border-2 border-black my-2 space-y-1.5">
+        <div id="p3Ring" class="flex items-center justify-center w-16 h-16 rounded-full border-3 border-slate-400 bg-white transition-all">
+          <span id="p3TextStatus" class="text-xs font-black text-slate-500">待機中</span>
+        </div>
+        <div id="p3Text" class="text-xs font-black text-slate-700">沈黙中（安全）</div>
+        
+        <div class="w-full space-y-0.5">
+          <div class="flex justify-between text-[10px] font-bold text-slate-500">
+            <span>マイク音量</span>
+            <span id="p3LevelVal">0.00</span>
+          </div>
+          <div class="w-full h-2 bg-slate-200 rounded-full border border-black overflow-hidden">
+            <div id="p3Bar" class="h-full bg-red-600 w-0 transition-all"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-50 p-2 rounded-xl border border-slate-300 space-y-0.5">
+        <div class="flex justify-between text-[10px] font-black text-slate-700">
+          <span>感度マージン調整</span>
+          <span class="text-red-600 font-mono">0.05</span>
+        </div>
+        <input type="range" min="0.01" max="0.30" value="0.05" class="w-full accent-red-600 cursor-pointer">
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const touchCursor = document.getElementById('touchCursor');
+    function moveCursor(x, y, active = false) {
+      touchCursor.style.opacity = '1';
+      touchCursor.style.left = x + 'px';
+      touchCursor.style.top = y + 'px';
+      if (active) touchCursor.classList.add('active');
+      else touchCursor.classList.remove('active');
+    }
+
+    const mainSilenceCounter = document.getElementById('mainSilenceCounter');
+    const mainCounterCard = document.getElementById('mainCounterCard');
+    const mainSilenceTag = document.getElementById('mainSilenceTag');
+    const mainSilenceMessage = document.getElementById('mainSilenceMessage');
+    const mainSpeedLines = document.getElementById('mainSpeedLines');
+    const mainStampPopup = document.getElementById('mainStampPopup');
+    const mainStampBadge = document.getElementById('mainStampBadge');
+    const mainLastStopper = document.getElementById('mainLastStopper');
+    const mainLastBreaker = document.getElementById('mainLastBreaker');
+    const mainStopperList = document.getElementById('mainStopperList');
+    const mainBreakerList = document.getElementById('mainBreakerList');
+    const mainTotalSilence = document.getElementById('mainTotalSilence');
+    const demoStepBadge = document.getElementById('demoStepBadge');
+
+    const p1Ring = document.getElementById('p1Ring');
+    const p1TextStatus = document.getElementById('p1TextStatus');
+    const p1Text = document.getElementById('p1Text');
+    const p1Bar = document.getElementById('p1Bar');
+    const p1LevelVal = document.getElementById('p1LevelVal');
+
+    const p2Ring = document.getElementById('p2Ring');
+    const p2TextStatus = document.getElementById('p2TextStatus');
+    const p2Text = document.getElementById('p2Text');
+    const p2Bar = document.getElementById('p2Bar');
+    const p2LevelVal = document.getElementById('p2LevelVal');
+
+    const p3Ring = document.getElementById('p3Ring');
+    const p3TextStatus = document.getElementById('p3TextStatus');
+    const p3Text = document.getElementById('p3Text');
+    const p3Bar = document.getElementById('p3Bar');
+    const p3LevelVal = document.getElementById('p3LevelVal');
+
+    const canvas = document.getElementById('mainTimelineCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.clientWidth * 2;
+    canvas.height = canvas.clientHeight * 2;
+
+    const historyBuffer = [];
+    const maxHistory = 200;
+
+    const script = [
+      { t: 0, step: "実演中: 佐藤が発言", action: () => {
+        setPhoneSpeaking(2, true, 0.75, "佐藤が発言中！");
+        setPhoneSpeaking(1, false, 0.02);
+        setPhoneSpeaking(3, false, 0.03);
+        setMainState(false, "発表者 (佐藤)", 0);
+        moveCursor(960, 850, true);
+      }},
+      { t: 2500, step: "実演中: 鈴木 (審査員) が相槌", action: () => {
+        setPhoneSpeaking(2, false, 0.02);
+        setPhoneSpeaking(1, true, 0.80, "鈴木が相槌！");
+        setMainState(false, "審査員A (鈴木)", 0);
+        moveCursor(320, 850, true);
+      }},
+      { t: 5000, step: "実演中: 佐藤が発表を進行", action: () => {
+        setPhoneSpeaking(1, false, 0.02);
+        setPhoneSpeaking(2, true, 0.70, "佐藤: 『会話の隙間を測ります』");
+        setMainState(false, "発表者 (佐藤)", 0);
+        moveCursor(960, 850, false);
+      }},
+      { t: 8000, step: "田中が突拍子もない発言！", action: () => {
+        setPhoneSpeaking(2, false, 0.02);
+        setPhoneSpeaking(3, true, 0.90, "田中: 『今日の朝ご飯はカツ丼でした！』");
+        setMainState(false, "メンバー (田中)", 0);
+        moveCursor(1600, 850, true);
+      }},
+      { t: 10500, step: "隙間（沈黙）発生開始...", action: () => {
+        setPhoneSpeaking(3, false, 0.02);
+        setMainState(true, "メンバー (田中)", 0.5);
+        moveCursor(960, 300, false);
+      }},
+      { t: 14000, step: "3秒沈黙... 気まずい間", action: () => {
+        setMainState(true, "メンバー (田中)", 3.5);
+      }},
+      { t: 16000, step: "5秒突破！特大スタンプ飛び出し！", action: () => {
+        setMainState(true, "メンバー (田中)", 5.5, true);
+        moveCursor(960, 300, true);
+      }},
+      { t: 20500, step: "10秒突破！完全凍結アラート！", action: () => {
+        setMainState(true, "メンバー (田中)", 10.2, true, true);
+      }},
+      { t: 22000, step: "鈴木 (審査員) が沈黙を救出！MVP！", action: () => {
+        setPhoneSpeaking(1, true, 0.85, "鈴木: 『カツ丼美味しかったですか？』");
+        setMainState(false, "審査員A (鈴木)", 0, false, false, true);
+        confetti({ particleCount: 100, spread: 80, origin: { y: 0.5 } });
+        moveCursor(320, 850, true);
+      }},
+      { t: 25000, step: "戦犯ランキング確定", action: () => {
+        setPhoneSpeaking(1, false, 0.02);
+        setPhoneSpeaking(2, true, 0.60, "佐藤: 『田中が会話を凍らせました！』");
+        setMainState(false, "発表者 (佐藤)", 0);
+      }}
+    ];
+
+    function setPhoneSpeaking(phoneId, speaking, level, text = "") {
+      const ring = [null, p1Ring, p2Ring, p3Ring][phoneId];
+      const statusLabel = [null, p1TextStatus, p2TextStatus, p3TextStatus][phoneId];
+      const txt = [null, p1Text, p2Text, p3Text][phoneId];
+      const bar = [null, p1Bar, p2Bar, p3Bar][phoneId];
+      const val = [null, p1LevelVal, p2LevelVal, p3LevelVal][phoneId];
+
+      val.textContent = level.toFixed(2);
+      bar.style.width = Math.min(100, level * 120) + '%';
+
+      if (speaking) {
+        ring.className = 'flex items-center justify-center w-16 h-16 rounded-full border-4 border-red-600 bg-red-100 shadow-md scale-105';
+        statusLabel.className = 'text-xs font-black text-red-600';
+        statusLabel.textContent = '発言中';
+        txt.className = 'text-xs font-black text-red-600';
+        txt.textContent = text || 'あなたが発言中！';
+      } else {
+        ring.className = 'flex items-center justify-center w-16 h-16 rounded-full border-3 border-slate-400 bg-white scale-100';
+        statusLabel.className = 'text-xs font-black text-slate-500';
+        statusLabel.textContent = '待機中';
+        txt.className = 'text-xs font-black text-slate-700';
+        txt.textContent = '沈黙中（安全）';
+      }
+    }
+
+    function setMainState(isSilence, activeName, duration, showStamp = false, isDanger = false, breakerTrigger = false) {
+      mainSilenceCounter.textContent = duration.toFixed(1);
+
+      if (isSilence) {
+        mainSpeedLines.classList.remove('hidden');
+        if (isDanger) {
+          mainCounterCard.className = 'flex-1 bg-red-600 border-4 border-black rounded-3xl p-4 flex flex-col items-center justify-center relative overflow-hidden comic-box-danger shake-hard';
+          mainSilenceCounter.className = 'text-8xl font-black font-mono tracking-tighter text-yellow-300 drop-shadow-[4px_4px_0px_#000]';
+          mainSilenceTag.className = 'text-[11px] font-black uppercase text-white bg-black px-3 py-0.5 rounded-full border-2 border-white animate-bounce';
+          mainSilenceTag.textContent = '【大惨事】完全凍結中';
+          mainSilenceMessage.className = 'text-sm font-black text-white px-6 py-1.5 rounded-xl bg-black border-2 border-yellow-300 shadow-[4px_4px_0px_#000]';
+          mainSilenceMessage.textContent = `${activeName} の発言で会話が完全に死にました（${duration.toFixed(1)}秒沈黙）`;
+        } else if (showStamp) {
+          mainCounterCard.className = 'flex-1 bg-red-100 border-4 border-red-600 rounded-3xl p-4 flex flex-col items-center justify-center relative overflow-hidden comic-box-danger';
+          mainSilenceCounter.className = 'text-8xl font-black font-mono tracking-tighter text-red-600';
+          mainSilenceTag.className = 'text-[11px] font-black uppercase text-white bg-red-600 px-3 py-0.5 rounded-full border-2 border-black';
+          mainSilenceTag.textContent = '気まずい沈黙が発生中！';
+          mainSilenceMessage.className = 'text-sm font-black text-red-700 px-6 py-1.5 rounded-xl bg-yellow-200 border-2 border-black';
+          mainSilenceMessage.textContent = `その発言で会話がピタッと止まりました…（犯人: ${activeName}）`;
+        } else {
+          mainCounterCard.className = 'flex-1 bg-amber-100 border-4 border-black rounded-3xl p-4 flex flex-col items-center justify-center relative overflow-hidden comic-box';
+          mainSilenceCounter.className = 'text-8xl font-black font-mono tracking-tighter text-amber-700';
+          mainSilenceTag.className = 'text-[11px] font-black uppercase text-slate-800 bg-amber-300 px-3 py-0.5 rounded-full border-2 border-black';
+          mainSilenceTag.textContent = '会話ストップ検知（隙間発生）';
+          mainSilenceMessage.className = 'text-sm font-black text-slate-800 px-6 py-1.5 rounded-xl bg-white border-2 border-black';
+          mainSilenceMessage.textContent = `気まずい間が発生しています（直前: ${activeName}）`;
+        }
+
+        if (showStamp) {
+          mainStampPopup.classList.remove('hidden');
+          mainStampPopup.classList.add('animate-stamp-large');
+          mainStampBadge.textContent = `犯人: ${activeName}`;
+        }
+      } else {
+        mainSpeedLines.classList.add('hidden');
+        mainStampPopup.classList.add('hidden');
+        mainCounterCard.className = 'flex-1 bg-emerald-50 border-4 border-black rounded-3xl p-4 flex flex-col items-center justify-center relative overflow-hidden comic-box';
+        mainSilenceCounter.className = 'text-8xl font-black font-mono tracking-tighter text-emerald-600';
+        mainSilenceTag.className = 'text-[11px] font-black uppercase text-white bg-emerald-600 px-3 py-0.5 rounded-full border-2 border-black';
+        mainSilenceTag.textContent = '会話進行中（隙間なし）';
+        mainSilenceMessage.className = 'text-sm font-black text-slate-900 px-6 py-1.5 rounded-xl bg-yellow-300 border-2 border-black shadow-[3px_3px_0px_#000]';
+        mainSilenceMessage.textContent = `${activeName} が発言中！`;
+
+        if (breakerTrigger) {
+          mainLastBreaker.textContent = '審査員A (鈴木) (+10.2秒救出)';
+          mainBreakerList.innerHTML = `
+            <div class="flex justify-between bg-emerald-50 border border-black px-2 py-1 rounded text-xs font-black">
+              <span>審査員A (鈴木)</span>
+              <span class="text-emerald-700 font-mono">1回救出</span>
+            </div>
+          `;
+          mainLastStopper.textContent = 'メンバー (田中) (10.2秒凍結)';
+          mainStopperList.innerHTML = `
+            <div class="flex justify-between bg-red-50 border-2 border-black p-1.5 rounded-lg text-xs font-black shadow-[2px_2px_0px_#000]">
+              <div class="flex items-center gap-1.5">
+                <span class="w-4 h-4 bg-red-600 text-white rounded text-[10px] flex items-center justify-center">1</span>
+                <span>メンバー (田中)</span>
+              </div>
+              <span class="text-red-600 font-mono">1回 (10.2s)</span>
+            </div>
+          `;
+          mainTotalSilence.textContent = '10.2 秒';
+        }
+      }
+
+      historyBuffer.push({ isSilence });
+      if (historyBuffer.length > maxHistory) historyBuffer.shift();
+      drawTimeline();
+    }
+
+    function drawTimeline() {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      const barWidth = w / maxHistory;
+      for (let i = 0; i < historyBuffer.length; i++) {
+        const item = historyBuffer[i];
+        const x = i * barWidth;
+        if (item.isSilence) {
+          ctx.fillStyle = '#ef4444';
+          ctx.fillRect(x, h * 0.3, barWidth + 1, h * 0.4);
+        } else {
+          ctx.fillStyle = '#10b981';
+          ctx.fillRect(x, h * 0.15, barWidth + 1, h * 0.7);
+        }
+      }
+    }
+
+    let startTime = Date.now();
+    function loop() {
+      const elapsed = (Date.now() - startTime) % 27000;
+      for (let i = script.length - 1; i >= 0; i--) {
+        if (elapsed >= script[i].t) {
+          demoStepBadge.textContent = script[i].step;
+          script[i].action();
+          break;
+        }
+      }
+      requestAnimationFrame(loop);
+    }
+    loop();
+  </script>
+</body>
+</html>
