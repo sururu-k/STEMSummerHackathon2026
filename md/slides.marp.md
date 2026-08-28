@@ -3,7 +3,7 @@ marp: true
 theme: gaia
 paginate: true
 header: "STEM Summer Hackathon 2026 ｜ 技術者倫理 遵守済み"
-footer: "チーム「隙間ハンター」 ｜ 会話クラッシャー晒し機"
+footer: "会話クラッシャー晒し機"
 style: |
   section {
     font-family: 'M PLUS Rounded 1c', 'Zen Maru Gothic', 'Hiragino Sans', 'Meiryo', sans-serif;
@@ -75,7 +75,7 @@ style: |
 
 <br>
 
-**チーム「隙間ハンター」** ｜ 発表時間：約 2〜3 分
+**発表時間：約 2〜3 分**
 
 ---
 
