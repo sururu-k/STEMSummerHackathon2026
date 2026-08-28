@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>その発言で会話がピタッと止まった晒し機</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@700;800;900&family=Zen+Maru+Gothic:wght@700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: 'M PLUS Rounded 1c', 'Zen Maru Gothic', sans-serif;
+    }
+    .comic-text-danger {
+      text-shadow: 
+        3px 3px 0 #000,
+        -3px -3px 0 #000,
+        3px -3px 0 #000,
+        -3px 3px 0 #000,
+        0 4px 10px rgba(0,0,0,0.8);
+    }
+    .comic-box {
+      border: 4px solid #1e293b;
+      box-shadow: 6px 6px 0px #0f172a;
+    }
+    .comic-box-danger {
+      border: 5px solid #000;
+      box-shadow: 8px 8px 0px #dc2626;
+    }
+    @keyframes focus-lines {
+      0% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.03) rotate(1deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    .speed-lines {
+      background: repeating-conic-gradient(
+        from 0deg,
+        rgba(220, 38, 38, 0.22) 0deg 10deg,
+        transparent 10deg 20deg
+      );
+      animation: focus-lines 0.2s infinite linear;
+    }
+    @keyframes stamp-slam-large {
+      0% { transform: translate(-50%, -50%) scale(3) rotate(-15deg); opacity: 0; }
+      70% { transform: translate(-50%, -50%) scale(0.95) rotate(2deg); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1) rotate(-2deg); opacity: 1; }
+    }
+    .animate-stamp-large {
+      animation: stamp-slam-large 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    @keyframes comic-shake {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-4px, 4px) rotate(-1.5deg); }
+      40% { transform: translate(4px, -4px) rotate(1.5deg); }
+      60% { transform: translate(-3px, -2px) rotate(-1deg); }
+      80% { transform: translate(3px, 3px) rotate(1deg); }
+    }
+    .shake-hard {
+      animation: comic-shake 0.15s infinite;
+    }
+  </style>
+</head>
+<body class="bg-amber-50 text-slate-900 min-h-screen p-6 flex flex-col justify-between select-none">
+
+  <!-- ヘッダー -->
+  <header class="flex items-center justify-between border-b-4 border-slate-900 pb-3 bg-white px-5 py-3 rounded-2xl comic-box">
+    <div class="flex items-center gap-3">
+      <div class="bg-red-500 text-white font-black text-xs px-3 py-1.5 rounded-lg rotate-[-3deg] shadow-md border-2 border-black tracking-wider">
+        緊急晒しシステム
+      </div>
+      <div>
+        <h1 class="text-2xl md:text-3xl font-black tracking-tight text-slate-900 flex items-center gap-2">
+          その発言で会話がピタッと止まった晒し機
+        </h1>
+        <p class="text-xs font-bold text-slate-600">あなたの「あの一言」が作った気まずい隙間（沈黙）を白日の下に晒す！</p>
+      </div>
+    </div>
+
+    <!-- モード & 参加者 -->
+    <div class="flex items-center gap-3">
+      <div class="text-[11px] font-bold text-slate-500 font-mono hidden lg:block bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-300">
+        [Space] 強制沈黙/解除 | [1/2/3] 戦犯指定 | [R] リプレイ
+      </div>
+      <button id="toggleModeBtn" class="px-3 py-1.5 text-xs bg-red-500 hover:bg-red-600 text-white font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] active:translate-x-[2px] active:translate-y-[2px]">
+        LIVE 監視中
+      </button>
+      <button id="restartReplayBtn" class="hidden px-3 py-1.5 text-xs bg-amber-400 hover:bg-amber-500 text-black font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000]">
+        リプレイ再開
+      </button>
+      <div class="flex items-center gap-2 px-3 py-1.5 bg-yellow-300 border-2 border-black rounded-xl text-xs font-black shadow-[2px_2px_0px_#000]">
+        <div class="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping"></div>
+        <span id="participantCount">参加者: 0 名</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- メインエリア -->
+  <main class="grid grid-cols-12 gap-6 my-4 flex-1 items-stretch">
+    
+    <!-- 左側: メイン晒しスクリーン (8カラム) -->
+    <div class="col-span-8 flex flex-col justify-between gap-4">
+      
+      <!-- 巨大カウンタ & 晒しカード -->
+      <div id="counterCard" class="flex-1 bg-white border-4 border-black rounded-3xl p-6 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-200 comic-box">
+        
+        <!-- 集中線レイヤー（沈黙時に表示） -->
+        <div id="speedLines" class="hidden absolute inset-0 speed-lines pointer-events-none z-0"></div>
+
+        <div class="relative z-10 flex flex-col items-center justify-center w-full">
+          
+          <div id="silenceHeaderTag" class="text-xs font-black uppercase tracking-widest text-slate-600 mb-1 bg-slate-200 px-4 py-1 rounded-full border-2 border-black">
+            連続沈黙時間（会話の隙間）
+          </div>
+          
+          <!-- 秒数大文字 -->
+          <div class="flex items-baseline gap-2 my-1">
+            <span id="silenceCounter" class="text-9xl font-black font-mono tracking-tighter text-slate-900 drop-shadow-[4px_4px_0px_#cbd5e1] transition-colors">
+              0.0
+            </span>
+            <span class="text-4xl font-black text-slate-700">秒</span>
+          </div>
+
+          <!-- バラエティ風テロップメッセージ -->
+          <div id="silenceMessage" class="mt-2 text-base font-black text-slate-800 px-6 py-2 rounded-2xl bg-yellow-300 border-3 border-black max-w-2xl text-center shadow-[4px_4px_0px_#000]">
+            会話進行中
+          </div>
+
+        </div>
+
+        <!-- 特大スタンプポップアップ（画面中央にドカンと巨大出現） -->
+        <div id="stampPopup" class="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-80 md:w-96 drop-shadow-[12px_12px_0px_rgba(0,0,0,0.9)] pointer-events-none">
+          <div class="relative">
+            <img src="/その発言で会話がピタッと止まった.png" alt="その発言で会話がピタッと止まった" class="w-full rounded-2xl border-5 border-black bg-white shadow-2xl">
+            <div id="stampStopperBadge" class="absolute -top-4 -left-4 bg-red-600 text-white text-sm font-black px-4 py-1.5 rounded-xl border-3 border-black rotate-[-6deg] shadow-lg">
+              犯人: ○○
+            </div>
+          </div>
+        </div>
+
+        <!-- 下部テロップ帯 (直近の戦犯・救世主) -->
+        <div class="relative z-10 w-full flex items-center justify-between text-xs font-black text-slate-700 border-t-3 border-black pt-3 mt-4">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 bg-red-600 text-white rounded-md border-2 border-black shadow-[2px_2px_0px_#000]">直前の戦犯</span>
+            <span id="lastStopperName" class="text-sm font-black text-red-600">まだいません</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 bg-emerald-500 text-white rounded-md border-2 border-black shadow-[2px_2px_0px_#000]">沈黙救出MVP</span>
+            <span id="lastBreakerName" class="text-sm font-black text-emerald-700">まだいません</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- タイムライン (漫画コマ風 Canvas) -->
+      <div class="bg-white border-4 border-black rounded-3xl p-4 comic-box space-y-1">
+        <div class="flex items-center justify-between text-xs font-black text-slate-800 px-1">
+          <span class="flex items-center gap-1.5">
+            発話と「隙間（沈黙）」の記録タイムライン
+          </span>
+          <span class="text-[10px] text-slate-500 font-bold">過去30秒スクロール</span>
+        </div>
+        <canvas id="timelineCanvas" class="w-full h-24 bg-slate-900 rounded-xl border-3 border-black"></canvas>
+      </div>
+
+    </div>
+
+    <!-- 右側: 戦犯ランキング & QRコード (4カラム) -->
+    <div class="col-span-4 flex flex-col justify-between gap-4">
+      
+      <!-- 戦犯ランキングカード -->
+      <div class="flex-1 bg-white border-4 border-black rounded-3xl p-5 comic-box flex flex-col justify-between space-y-3">
+        
+        <!-- 会話ストッパー戦犯殿堂 (メイン) -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between border-b-2 border-slate-200 pb-1.5">
+            <h3 class="text-sm font-black text-red-600 flex items-center gap-1.5 tracking-tight">
+              会話クラッシャー殿堂（戦犯）
+            </h3>
+            <span class="text-[10px] font-bold text-slate-500">凍結させた回数</span>
+          </div>
+          <div id="stopperList" class="space-y-2">
+            <div class="text-xs font-bold text-slate-400 text-center py-4 bg-slate-100 rounded-xl border-2 border-dashed border-slate-300">
+              まだ誰も会話を止めていません
+            </div>
+          </div>
+        </div>
+
+        <!-- 沈黙ブレイカー救出 -->
+        <div class="space-y-1 border-t-2 border-slate-200 pt-2">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-black text-emerald-600">
+              気まずさ救出ランキング
+            </h3>
+          </div>
+          <div id="breakerList" class="space-y-1">
+            <div class="text-[11px] font-bold text-slate-400 text-center py-1 bg-slate-50 rounded-lg">記録なし</div>
+          </div>
+        </div>
+
+        <!-- 被害合計 -->
+        <div class="bg-red-50 p-3 rounded-2xl border-2 border-red-300 flex items-center justify-between text-xs font-black">
+          <span class="text-slate-700">会話凍結の合計被害時間</span>
+          <span id="totalSilenceDisplay" class="font-mono font-black text-red-600 text-base">0.0 秒</span>
+        </div>
+
+      </div>
+
+      <!-- 参加用 QR コードカード -->
+      <div class="bg-yellow-300 border-4 border-black rounded-3xl p-4 comic-box flex items-center gap-3 shadow-[6px_6px_0px_#000]">
+        <canvas id="qrCanvas" class="w-20 h-20 bg-white rounded-xl p-1 shrink-0 border-2 border-black shadow-sm"></canvas>
+        <div class="space-y-0.5">
+          <div class="text-xs font-black bg-red-600 text-white px-2 py-0.5 rounded inline-block rotate-[-2deg]">
+            審査員も今すぐ参加！
+          </div>
+          <div class="text-sm font-black text-slate-900 leading-tight">スマホでQRをスキャン</div>
+          <p class="text-[10px] font-bold text-slate-700 leading-tight">音声は送信されず発話監視のみ共有されます</p>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- フッター -->
+  <footer class="flex items-center justify-between text-xs font-bold text-slate-600 border-t-2 border-slate-300 pt-2">
+    <span>STEM Summer Hackathon 2026 - テーマ「隙間」</span>
+    <span class="font-mono">その発言で！ピタッと止まった監視システム</span>
+  </footer>
+
+  <script>
+    const joinUrl = location.origin + '/';
+    QRCode.toCanvas(document.getElementById('qrCanvas'), joinUrl, { width: 80, margin: 1 });
+
+    const silenceCounter = document.getElementById('silenceCounter');
+    const counterCard = document.getElementById('counterCard');
+    const silenceHeaderTag = document.getElementById('silenceHeaderTag');
+    const silenceMessage = document.getElementById('silenceMessage');
+    const speedLines = document.getElementById('speedLines');
+    const stampPopup = document.getElementById('stampPopup');
+    const stampStopperBadge = document.getElementById('stampStopperBadge');
+    const participantCount = document.getElementById('participantCount');
+    const lastStopperName = document.getElementById('lastStopperName');
+    const lastBreakerName = document.getElementById('lastBreakerName');
+    const totalSilenceDisplay = document.getElementById('totalSilenceDisplay');
+    const stopperList = document.getElementById('stopperList');
+    const breakerList = document.getElementById('breakerList');
+    const toggleModeBtn = document.getElementById('toggleModeBtn');
+    const restartReplayBtn = document.getElementById('restartReplayBtn');
+
+    const canvas = document.getElementById('timelineCanvas');
+    const ctx = canvas.getContext('2d');
+    function resizeCanvas() {
+      canvas.width = canvas.clientWidth * window.devicePixelRatio;
+      canvas.height = canvas.clientHeight * window.devicePixelRatio;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    const historyBuffer = [];
+    const maxHistory = 300;
+
+    let isReplayMode = new URLSearchParams(location.search).get('mode') === 'replay';
+    let replayScenario = null;
+    let replayTimer = null;
+    let replayStartTime = 0;
+    let lastBreakerTriggerCount = 0;
+
+    let ws = null;
+    function connectWs() {
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${protocol}//${location.host}/ws`);
+
+      ws.onmessage = (event) => {
+        if (isReplayMode) return;
+        const state = JSON.parse(event.data);
+        renderState(state);
+      };
+    }
+
+    if (!isReplayMode) {
+      connectWs();
+    } else {
+      startReplay();
+    }
+
+    toggleModeBtn.addEventListener('click', () => {
+      isReplayMode = !isReplayMode;
+      if (isReplayMode) {
+        toggleModeBtn.textContent = 'REPLAY 再生中';
+        toggleModeBtn.className = 'px-3 py-1.5 text-xs bg-amber-500 text-black font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000]';
+        restartReplayBtn.classList.remove('hidden');
+        startReplay();
+      } else {
+        toggleModeBtn.textContent = 'LIVE 監視中';
+        toggleModeBtn.className = 'px-3 py-1.5 text-xs bg-red-500 text-white font-black rounded-xl border-2 border-black shadow-[2px_2px_0px_#000]';
+        restartReplayBtn.classList.add('hidden');
+        if (replayTimer) clearInterval(replayTimer);
+        connectWs();
+      }
+    });
+
+    restartReplayBtn.addEventListener('click', () => {
+      startReplay();
+    });
+
+    let fakeSilence = false;
+    let fakeStopper = '発表者 (佐藤)';
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        fakeSilence = !fakeSilence;
+      } else if (e.key === '1') {
+        fakeStopper = '審査員A (鈴木)';
+      } else if (e.key === '2') {
+        fakeStopper = '発表者 (佐藤)';
+      } else if (e.key === '3') {
+        fakeStopper = 'メンバー (田中)';
+      } else if (e.key.toLowerCase() === 'r') {
+        isReplayMode = true;
+        toggleModeBtn.textContent = 'REPLAY 再生中';
+        restartReplayBtn.classList.remove('hidden');
+        startReplay();
+      }
+    });
+
+    function renderState(state) {
+      const duration = state.currentSilenceDurationSec || 0;
+      silenceCounter.textContent = duration.toFixed(1);
+      participantCount.textContent = `参加者: ${state.participants ? state.participants.length : 0} 名`;
+      totalSilenceDisplay.textContent = `${(state.stats?.totalSilenceSec || 0).toFixed(1)} 秒`;
+
+      const targetStopper = state.lastStopper?.userName || fakeStopper || '直前の発言者';
+
+      if (state.isSilence) {
+        speedLines.classList.remove('hidden');
+
+        if (duration >= 10.0) {
+          counterCard.className = 'flex-1 bg-red-600 border-5 border-black rounded-3xl p-6 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-150 comic-box-danger shake-hard';
+          silenceCounter.className = 'text-9xl font-black font-mono tracking-tighter text-yellow-300 comic-text-danger';
+          silenceHeaderTag.className = 'text-xs font-black uppercase tracking-widest text-white bg-black px-4 py-1 rounded-full border-2 border-white animate-bounce';
+          silenceHeaderTag.textContent = '【大惨事】完全凍結中';
+          silenceMessage.className = 'mt-2 text-lg font-black text-white px-8 py-3 rounded-2xl bg-black border-3 border-yellow-300 shadow-[6px_6px_0px_#000]';
+          silenceMessage.textContent = `${targetStopper} の発言で会話が完全に死にました（${duration.toFixed(1)}秒沈黙）`;
+          
+          stampPopup.classList.remove('hidden');
+          stampPopup.classList.add('animate-stamp-large');
+          stampStopperBadge.textContent = `犯人: ${targetStopper}`;
+
+        } else if (duration >= 5.0) {
+          counterCard.className = 'flex-1 bg-red-100 border-4 border-red-600 rounded-3xl p-6 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-200 comic-box-danger';
+          silenceCounter.className = 'text-9xl font-black font-mono tracking-tighter text-red-600';
+          silenceHeaderTag.className = 'text-xs font-black uppercase tracking-widest text-white bg-red-600 px-4 py-1 rounded-full border-2 border-black';
+          silenceHeaderTag.textContent = '気まずい沈黙が発生中！';
+          silenceMessage.className = 'mt-2 text-base font-black text-red-700 px-6 py-2 rounded-2xl bg-yellow-200 border-3 border-black shadow-[4px_4px_0px_#000]';
+          silenceMessage.textContent = `その発言で会話がピタッと止まりました…（犯人: ${targetStopper}）`;
+
+          stampPopup.classList.remove('hidden');
+          stampPopup.classList.add('animate-stamp-large');
+          stampStopperBadge.textContent = `犯人: ${targetStopper}`;
+
+        } else if (duration >= 3.0) {
+          counterCard.className = 'flex-1 bg-amber-100 border-4 border-black rounded-3xl p-6 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-200 comic-box';
+          silenceCounter.className = 'text-9xl font-black font-mono tracking-tighter text-amber-700';
+          silenceHeaderTag.className = 'text-xs font-black uppercase tracking-widest text-slate-800 bg-amber-300 px-4 py-1 rounded-full border-2 border-black';
+          silenceHeaderTag.textContent = '会話ストップ検知（隙間発生）';
+          silenceMessage.className = 'mt-2 text-sm font-black text-slate-800 px-5 py-1.5 rounded-xl bg-white border-2 border-black shadow-[3px_3px_0px_#000]';
+          silenceMessage.textContent = `発言終了… 気まずい間が発生しています（直前: ${targetStopper}）`;
+          stampPopup.classList.add('hidden');
+        } else {
+          counterCard.className = 'flex-1 bg-white border-4 border-black rounded-3xl p-6 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-200 comic-box';
+          silenceCounter.className = 'text-9xl font-black font-mono tracking-tighter text-slate-800';
+          silenceHeaderTag.className = 'text-xs font-black uppercase tracking-widest text-slate-600 bg-slate-200 px-4 py-1 rounded-full border-2 border-black';
+          silenceHeaderTag.textContent = '連続沈黙時間（会話の隙間）';
+          silenceMessage.className = 'mt-2 text-sm font-bold text-slate-600 px-4 py-1.5 rounded-xl bg-slate-100 border-2 border-slate-400';
+          silenceMessage.textContent = '呼吸・思考の間...';
+          stampPopup.classList.add('hidden');
+        }
+      } else {
+        speedLines.classList.add('hidden');
+        stampPopup.classList.add('hidden');
+        counterCard.className = 'flex-1 bg-emerald-50 border-4 border-black rounded-3xl p-6 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-200 comic-box';
+        silenceCounter.className = 'text-9xl font-black font-mono tracking-tighter text-emerald-600';
+        silenceHeaderTag.className = 'text-xs font-black uppercase tracking-widest text-white bg-emerald-600 px-4 py-1 rounded-full border-2 border-black';
+        silenceHeaderTag.textContent = '会話進行中（隙間なし）';
+        
+        const speaker = state.participants?.find(p => p.id === state.activeSpeakerId);
+        silenceMessage.className = 'mt-2 text-base font-black text-slate-900 px-6 py-2 rounded-2xl bg-yellow-300 border-3 border-black shadow-[4px_4px_0px_#000]';
+        silenceMessage.textContent = speaker ? `${speaker.name} が発言中！` : '誰かが喋っています';
+      }
+
+      if (state.lastStopper) {
+        lastStopperName.textContent = `${state.lastStopper.userName} (${state.lastStopper.durationSec}秒凍結)`;
+      }
+      if (state.lastBreaker) {
+        lastBreakerName.textContent = `${state.lastBreaker.userName} (+${state.lastBreaker.silenceDurationSec}秒救出)`;
+      }
+
+      const breakerTotal = state.stats?.breakers?.reduce((acc, b) => acc + b.count, 0) || 0;
+      if (breakerTotal > lastBreakerTriggerCount) {
+        lastBreakerTriggerCount = breakerTotal;
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+      }
+
+      renderRankings(state.stats);
+
+      historyBuffer.push({
+        isSilence: state.isSilence,
+        activeSpeakerId: state.activeSpeakerId,
+        participants: state.participants || []
+      });
+      if (historyBuffer.length > maxHistory) historyBuffer.shift();
+
+      drawTimeline();
+    }
+
+    function renderRankings(stats) {
+      if (!stats) return;
+
+      if (stats.stoppers && stats.stoppers.length > 0) {
+        stopperList.innerHTML = stats.stoppers.slice(0, 4).map((s, i) => `
+          <div class="flex items-center justify-between bg-red-50 border-2 border-black p-2 rounded-xl text-xs font-black shadow-[2px_2px_0px_#000]">
+            <div class="flex items-center gap-2">
+              <span class="w-5 h-5 flex items-center justify-center text-[11px] rounded-md ${i === 0 ? 'bg-red-600 text-white animate-bounce' : 'bg-slate-800 text-white'} border border-black">${i + 1}</span>
+              <span class="text-slate-900">${s.name}</span>
+            </div>
+            <span class="font-mono text-red-600">${s.count}回クラッシュ (平均${s.avgSilenceSec}s)</span>
+          </div>
+        `).join('');
+      }
+
+      if (stats.breakers && stats.breakers.length > 0) {
+        breakerList.innerHTML = stats.breakers.slice(0, 2).map((b, i) => `
+          <div class="flex items-center justify-between bg-emerald-50 border border-black px-2.5 py-1.5 rounded-lg text-xs font-bold shadow-[1px_1px_0px_#000]">
+            <span class="text-slate-800">${b.name}</span>
+            <span class="font-mono text-emerald-700">${b.count} 回救出</span>
+          </div>
+        `).join('');
+      }
+    }
+
+    const speakerColors = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6'];
+    function drawTimeline() {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      const barWidth = w / maxHistory;
+      for (let i = 0; i < historyBuffer.length; i++) {
+        const item = historyBuffer[i];
+        const x = i * barWidth;
+
+        if (item.isSilence) {
+          ctx.fillStyle = 'rgba(239, 68, 68, 0.7)';
+          ctx.fillRect(x, h * 0.35, barWidth + 1, h * 0.3);
+        } else {
+          const speakerIndex = item.participants.findIndex(p => p.id === item.activeSpeakerId);
+          ctx.fillStyle = speakerColors[(speakerIndex >= 0 ? speakerIndex : 0) % speakerColors.length];
+          ctx.fillRect(x, h * 0.15, barWidth + 1, h * 0.7);
+        }
+      }
+    }
+
+    async function startReplay() {
+      if (replayTimer) clearInterval(replayTimer);
+      historyBuffer.length = 0;
+
+      const res = await fetch('/api/replay-scenario');
+      replayScenario = await res.json();
+      replayStartTime = Date.now();
+
+      const participants = replayScenario.participants.map(p => ({
+        id: p.id,
+        name: p.name,
+        speaking: false,
+        level: 0
+      }));
+
+      let currentSilence = 0;
+      let lastStopper = null;
+      let lastBreaker = null;
+      let totalSilence = 0;
+      const stoppers = new Map();
+      const breakers = new Map();
+
+      replayTimer = setInterval(() => {
+        const elapsed = (Date.now() - replayStartTime) % 28000;
+        
+        const activeEvents = replayScenario.events.filter(e => e.timeMs <= elapsed);
+        const lastEvent = activeEvents[activeEvents.length - 1] || replayScenario.events[0];
+
+        const isSilence = !lastEvent.speaking;
+        if (isSilence) {
+          currentSilence += 0.1;
+          totalSilence += 0.1;
+        } else {
+          if (currentSilence >= 3.0) {
+            const breakerP = participants.find(p => p.id === lastEvent.userId);
+            lastBreaker = { userName: breakerP?.name || '鈴木', silenceDurationSec: Math.round(currentSilence * 10) / 10 };
+            breakers.set(lastEvent.userId, (breakers.get(lastEvent.userId) || 0) + 1);
+
+            lastStopper = { userName: 'メンバー (田中)', durationSec: Math.round(currentSilence * 10) / 10 };
+            stoppers.set('user_c', (stoppers.get('user_c') || 0) + 1);
+          }
+          currentSilence = 0;
+        }
+
+        renderState({
+          type: 'room_state',
+          isSilence,
+          activeSpeakerId: lastEvent.speaking ? lastEvent.userId : null,
+          currentSilenceDurationSec: currentSilence,
+          participants: participants.map(p => ({
+            ...p,
+            speaking: p.id === (lastEvent.speaking ? lastEvent.userId : null)
+          })),
+          lastStopper,
+          lastBreaker,
+          stats: {
+            totalSilenceSec: totalSilence,
+            stoppers: Array.from(stoppers.entries()).map(([id, c]) => ({ name: 'メンバー (田中)', count: c, avgSilenceSec: 6.2 })),
+            breakers: Array.from(breakers.entries()).map(([id, c]) => ({ name: '審査員A (鈴木)', count: c }))
+          }
+        });
+      }, 100);
+    }
+  </script>
+</body>
+</html>
