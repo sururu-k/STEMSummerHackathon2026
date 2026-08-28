@@ -38,18 +38,18 @@
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Participant as 参加者端末 (Mobile)
-    participant Worklet as AudioWorklet (Edge VAD)
-    participant Server as Node.js WebSocket Server
-    actor Display as 会場大画面 (Display)
+    participant Client as 参加者端末
+    participant Worklet as AudioWorklet
+    participant Server as WebSocketサーバー
+    participant Display as 会場大画面
 
-    Participant->>Worklet: マイク音声入力 (300-3400Hz Bandpass)
-    Worklet->>Worklet: RMS計算 & 適応ノイズフロア閾値判定
-    Note over Worklet: 音声実データは端末内で即座に破棄（技術者倫理遵守）
-    Worklet->>Server: 10Hz JSON { speaking: bool, level: float }
-    Server->>Server: 分散マイク音量比較 (Max-RMS Diarization)
-    Server->>Server: 沈黙ステートマシン更新 (沈黙秒数・戦犯判定)
-    Server-->>Display: 10Hz ルーム状態ブロードキャスト
+    Client->>Worklet: マイク音声入力
+    Worklet->>Worklet: RMS計算と適応ノイズフロア判定
+    Note over Worklet: 音声実データは端末内で即座に破棄
+    Worklet->>Server: 10Hz 発話状態と音量レベルを送信
+    Server->>Server: 分散マイク音量比較
+    Server->>Server: 沈黙ステートマシン更新
+    Server-->>Display: 10Hz ルーム状態を配信
     Note over Display: 5秒沈黙で特大スタンプ出現 / 10秒で完全凍結アラート
 ```
 
