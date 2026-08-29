@@ -70,12 +70,15 @@
     }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-900 min-h-screen p-4 flex flex-col justify-between select-none overflow-hidden" style="width: 1920px; height: 1080px;">
+<body class="bg-slate-950 text-slate-900 min-h-screen w-screen h-screen flex items-center justify-center overflow-hidden m-0 p-0 select-none">
 
-  <div id="touchCursor"></div>
+  <!-- 自動縮小・全画面フィットスケーラーコンテナ -->
+  <div id="studioScaler" style="width: 1920px; height: 1080px; transform-origin: center center; position: relative;" class="p-4 flex flex-col justify-between overflow-hidden">
 
-  <!-- 上部: 大画面プロジェクター投影ビュー (高さ 590px) -->
-  <div class="bg-amber-50 rounded-3xl p-4 border-4 border-black shadow-[8px_8px_0px_#000] flex flex-col justify-between" style="height: 590px;">
+    <div id="touchCursor"></div>
+
+    <!-- 上部: 大画面プロジェクター投影ビュー (高さ 590px) -->
+    <div class="bg-amber-50 rounded-3xl p-4 border-4 border-black shadow-[8px_8px_0px_#000] flex flex-col justify-between" style="height: 590px;">
     
     <!-- 大画面ヘッダー -->
     <div class="flex items-center justify-between bg-white px-4 py-2 rounded-2xl border-3 border-black comic-box">
@@ -544,6 +547,19 @@
       requestAnimationFrame(loop);
     }
     loop();
+
+    function autoScaleStudio() {
+      const scaler = document.getElementById('studioScaler');
+      if (!scaler) return;
+      const targetW = 1920;
+      const targetH = 1080;
+      const scale = Math.min(window.innerWidth / targetW, window.innerHeight / targetH);
+      scaler.style.transform = `scale(${scale})`;
+    }
+    window.addEventListener('resize', autoScaleStudio);
+    window.addEventListener('DOMContentLoaded', autoScaleStudio);
+    autoScaleStudio();
   </script>
+  </div>
 </body>
 </html>
