@@ -8,7 +8,7 @@
     "start": "node server/index.js",
     "dev": "node --watch server/index.js",
     "record-video": "node scripts/record-demo-video.js",
-    "build-slides": "marp --no-stdin md/slides.marp.md -o public/marp-slides.html --html"
+    "build-slides": "npx @marp-team/marp-cli --no-stdin md/slides.marp.md -o public/marp-slides.html --html"
   },
   "dependencies": {
     "express": "^4.21.2",
